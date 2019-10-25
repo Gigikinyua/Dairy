@@ -1,16 +1,24 @@
 package com.kinyua.dairy.Fragments;
 
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.content.ContentResolver;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -19,6 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -27,9 +36,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.kinyua.dairy.Helpers.ImageUploadInfo;
 import com.kinyua.dairy.R;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -45,6 +58,16 @@ public class AddFragment extends Fragment {
     private Spinner type;
 
     private ProgressBar progressBar;
+    private ImageView imageView;
+
+    // Creating URI.
+    Uri FilePathUri;
+
+    String downloadUrl;
+
+    // Creating StorageReference and DatabaseReference object.
+    StorageReference storageReference;
+    int Image_Request_Code = 7;
 
     public AddFragment() {
         // Required empty public constructor
@@ -57,9 +80,21 @@ public class AddFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_add, container, false);
 
+        storageReference = FirebaseStorage.getInstance().getReference();
+
         name = view.findViewById(R.id.cowname);
         id = view.findViewById(R.id.cowid);
         progressBar = view.findViewById(R.id.cowProgress);
+        imageView = view.findViewById(R.id.cowphoto);
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Please Select Image"), Image_Request_Code);
+            }
+        });
 
         type = view.findViewById(R.id.typeSpinner);
         String[] types = {"Cow", "Bull"};
@@ -112,6 +147,23 @@ public class AddFragment extends Fragment {
 
                     final String userKey = firebaseUser.getUid();
 
+                    if (FilePathUri != null) {
+                        final StorageReference storageReference2nd = storageReference.child("All_images" + System.currentTimeMillis() + "." + GetFileExtension(FilePathUri));
+
+                        // Adding addOnSuccessListener to second StorageReference.
+                        storageReference2nd.putFile(FilePathUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                storageReference2nd.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Uri> task) {
+                                        downloadUrl = task.getResult().toString();
+                                    }
+                                });
+                            }
+                        });
+                    }
+
                     databaseReference.child("Users").child(userKey).addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -122,7 +174,7 @@ public class AddFragment extends Fragment {
 
                             String uploadId = reference.push().getKey();
 
-                            ImageUploadInfo imageUploadInfo = new ImageUploadInfo(cname, cid, names, cdob);
+                            ImageUploadInfo imageUploadInfo = new ImageUploadInfo(cname, cid, names, cdob, downloadUrl);
 
 //                            HashMap<String, String> hashMap = new HashMap<>();
 //                            hashMap.put("Cow Name", cname);
@@ -160,6 +212,43 @@ public class AddFragment extends Fragment {
         SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
 
         dob.setText(sdf.format(myCalendar.getTime()));
+    }
+
+    // Creating Method to get the selected image file Extension from File Path URI.
+    public String GetFileExtension(Uri uri) {
+
+        ContentResolver contentResolver = getActivity().getContentResolver();
+
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+
+        // Returning the file Extension.
+        return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri)) ;
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == Image_Request_Code && resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
+
+            FilePathUri = data.getData();
+
+            try {
+
+                // Getting selected image into Bitmap.
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), FilePathUri);
+
+                // Setting up bitmap selected image into ImageView.
+                imageView.setImageBitmap(bitmap);
+
+            }
+            catch (IOException e) {
+
+                e.printStackTrace();
+            }
+        }
     }
 
 }

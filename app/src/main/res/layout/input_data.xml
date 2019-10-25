@@ -13,19 +13,19 @@
 
     <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="250dp"
+        android:layout_height="350dp"
         android:background="#ECEFF1"
         android:orientation="vertical">
 
-<!--        <ImageView-->
-<!--            android:id="@+id/imageView"-->
-<!--            android:layout_width="fill_parent"-->
-<!--            android:layout_height="200dp"-->
-<!--            android:src="@mipmap/ic_launcher"-->
-<!--            android:layout_marginTop="10dp"-->
-<!--            android:layout_marginBottom="10dp"/>-->
+        <ImageView
+            android:id="@+id/cowimageView"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:src="@mipmap/ic_launcher"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="3dp"/>
 
-        <LinearLayout
+         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -71,6 +71,7 @@
                 android:id="@+id/cowiddisply"/>
 
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

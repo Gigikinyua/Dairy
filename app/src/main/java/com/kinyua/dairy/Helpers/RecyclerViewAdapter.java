@@ -48,7 +48,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         holder.dob.setText(UploadInfo.getCowDOB());
 
         //Loading image from Glide library.
-//        Glide.with(context).load(UploadInfo.getImageURL()).into(holder.imageView);
+        Glide.with(context).load(UploadInfo.getImageURL()).into(holder.cowImg);
     }
 
     @Override
@@ -61,6 +61,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 //        public ImageView imageView;
         TextView cowname, cowid, cowowner, dob;
+        ImageView cowImg;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -69,6 +70,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             cowid = itemView.findViewById(R.id.cowiddisply);
             dob = itemView.findViewById(R.id.cowdobdisply);
             cowowner = itemView.findViewById(R.id.cowownerdisply);
+            cowImg = itemView.findViewById(R.id.cowimageView);
 
 //            imageView = itemView.findViewById(R.id.imageView);
 //

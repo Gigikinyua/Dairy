@@ -6,19 +6,19 @@ public class ImageUploadInfo {
     public String cowOwner;
     public String cowDOB;
 
-//    public String imageURL;
+    public String imageURL;
 
     public ImageUploadInfo() {
 
     }
 
-    public ImageUploadInfo(String name, String id, String owner, String dob) {
+    public ImageUploadInfo(String name, String id, String owner, String dob, String url) {
 
         this.cowName = name;
         this.cowiden = id;
         this.cowOwner = owner;
         this.cowDOB = dob;
-//        this.imageURL= url;
+        this.imageURL= url;
     }
 
 
@@ -35,7 +35,7 @@ public class ImageUploadInfo {
         return cowDOB;
     }
 
-//    public String getImageURL() {
-//        return imageURL;
-//    }
+    public String getImageURL() {
+        return imageURL;
+    }
 }
