@@ -27,6 +27,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.kinyua.dairy.Helpers.ImageUploadInfo;
 import com.kinyua.dairy.R;
 
 import java.text.SimpleDateFormat;
@@ -107,7 +108,7 @@ public class AddFragment extends Fragment {
                     progressBar.setVisibility(View.VISIBLE);
                     FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                     FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-                    DatabaseReference databaseReference = firebaseDatabase.getReference();
+                    final DatabaseReference databaseReference = firebaseDatabase.getReference();
 
                     final String userKey = firebaseUser.getUid();
 
@@ -116,16 +117,21 @@ public class AddFragment extends Fragment {
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             String names = dataSnapshot.child("firstname").getValue().toString() + " " + dataSnapshot.child("lastname").getValue().toString();
 
-                            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Cows").child(userKey);
 
-                            HashMap<String, String> hashMap = new HashMap<>();
-                            hashMap.put("Cow Name", cname);
-                            hashMap.put("Tag Id", cid);
-                            hashMap.put("Date Of Birth", cdob);
-                            hashMap.put("Type", type.getSelectedItem().toString());
-                            hashMap.put("Owner Name", names);
+                            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Cows");
 
-                            reference.setValue(hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            String uploadId = reference.push().getKey();
+
+                            ImageUploadInfo imageUploadInfo = new ImageUploadInfo(cname, cid, names, cdob);
+
+//                            HashMap<String, String> hashMap = new HashMap<>();
+//                            hashMap.put("Cow Name", cname);
+//                            hashMap.put("Tag Id", cid);
+//                            hashMap.put("Date Of Birth", cdob);
+//                            hashMap.put("Type", type.getSelectedItem().toString());
+//                            hashMap.put("Owner Name", names);
+
+                            reference.child(uploadId).setValue(imageUploadInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     Toast.makeText(getContext(),
