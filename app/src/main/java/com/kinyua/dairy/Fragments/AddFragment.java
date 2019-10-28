@@ -147,61 +147,63 @@ public class AddFragment extends Fragment {
 
                     final String userKey = firebaseUser.getUid();
 
-                    if (FilePathUri != null) {
-                        final StorageReference storageReference2nd = storageReference.child("All_images" + System.currentTimeMillis() + "." + GetFileExtension(FilePathUri));
-
-                        // Adding addOnSuccessListener to second StorageReference.
-                        storageReference2nd.putFile(FilePathUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                storageReference2nd.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Uri> task) {
-                                        downloadUrl = task.getResult().toString();
-                                    }
-                                });
-                            }
-                        });
-                    }
-
                     databaseReference.child("Users").child(userKey).addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            String names = dataSnapshot.child("firstname").getValue().toString() + " " + dataSnapshot.child("lastname").getValue().toString();
+                            final String names = dataSnapshot.child("firstname").getValue().toString() + " " + dataSnapshot.child("lastname").getValue().toString();
 
+                            if (FilePathUri != null) {
+                                final StorageReference storageReference2nd = storageReference.child("Cow_Images").child("All_images" + System.currentTimeMillis() + "." + GetFileExtension(FilePathUri));
 
-                            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Cows");
+                                // Adding addOnSuccessListener to second StorageReference.
+                                storageReference2nd.putFile(FilePathUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                    @Override
+                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                        storageReference2nd.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Uri> task) {
+                                                downloadUrl = task.getResult().toString();
+//                                                Toast.makeText(getActivity(), downloadUrl, Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+
+                            final DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Cows");
 
                             String uploadId = reference.push().getKey();
 
                             ImageUploadInfo imageUploadInfo = new ImageUploadInfo(cname, cid, names, cdob, downloadUrl);
 
-//                            HashMap<String, String> hashMap = new HashMap<>();
-//                            hashMap.put("Cow Name", cname);
-//                            hashMap.put("Tag Id", cid);
-//                            hashMap.put("Date Of Birth", cdob);
-//                            hashMap.put("Type", type.getSelectedItem().toString());
-//                            hashMap.put("Owner Name", names);
-
-                            reference.child(uploadId).setValue(imageUploadInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    Toast.makeText(getContext(),
-                                            "CreateCowProfile: onComplete: " + task.isSuccessful(), Toast.LENGTH_LONG).show();
-                                    progressBar.setVisibility(View.GONE);
-                                }
 
 
-                            });
+//                                HashMap<String, String> hashMap = new HashMap<>();
+//
+//                                hashMap.put("Cow photo", downloadUrl);
+//                                hashMap.put("Cow Name", cname);
+//                                hashMap.put("Tag Id", cid);
+//                                hashMap.put("Date Of Birth", cdob);
+//                                hashMap.put("Type", type.getSelectedItem().toString());
+//                                hashMap.put("Owner Name", names);
+//
+//
+//                                reference.child(uploadId).setValue(hashMap);
 
-                        }
+                            progressBar.setVisibility(View.GONE);
+
+                            reference.child(uploadId).setValue(imageUploadInfo);
+                            Toast.makeText(getContext(), "Updated successfully", Toast.LENGTH_SHORT).show();
+                            }
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
 
                         }
                     });
+
                 }
+
             }
         });
 

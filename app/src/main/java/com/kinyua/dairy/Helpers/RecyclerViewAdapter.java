@@ -59,7 +59,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-//        public ImageView imageView;
+        //        public ImageView imageView;
         TextView cowname, cowid, cowowner, dob;
         ImageView cowImg;
 

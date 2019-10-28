@@ -2,6 +2,7 @@ package com.kinyua.dairy.Fragments;
 
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -16,9 +17,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.contentcapture.DataRemovalRequest;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -26,33 +32,33 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.kinyua.dairy.Activities.LoginActivity;
 import com.kinyua.dairy.EdtProfileActivity;
 import com.kinyua.dairy.R;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public class ProfileFragment extends Fragment {
 
     private TextView name, email, phone, uname;
     AppCompatImageView ppic;
 
-    // Folder path for Firebase Storage.
-    String Storage_Path = "All_Image_Uploads/";
 
-    // Root Database Name for Firebase Database.
-    public static final String Database_Path = "All_Image_Uploads_Database";
     // Creating URI.
-    Uri FilePathUri;
+    private Uri FilePathUri;
 
     // Creating StorageReference and DatabaseReference object.
     StorageReference storageReference;
-    int Image_Request_Code = 7;
+    private int Image_Request_Code = 7;
 
-    FirebaseAuth auth;
+    private FirebaseAuth auth;
 
-    Button edtprofile;
+    private Button profilepic, edtprofile;
+    String downloadUrl;
 
 
     public ProfileFragment() {
@@ -71,6 +77,7 @@ public class ProfileFragment extends Fragment {
         email = view.findViewById(R.id.email);
         phone = view.findViewById(R.id.phone);
         ppic = view.findViewById(R.id.profilephoto);
+        profilepic = view.findViewById(R.id.profilepic);
 
         ppic.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,6 +86,38 @@ public class ProfileFragment extends Fragment {
                 intent.setType("image/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(Intent.createChooser(intent, "Please Select Image"), Image_Request_Code);
+            }
+        });
+
+        profilepic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (FilePathUri != null) {
+                    final StorageReference storageReference2nd = FirebaseStorage.getInstance().getReference().child("Profile Images").child("All_images" + System.currentTimeMillis() + "." + GetFileExtension(FilePathUri));
+
+                    // Adding addOnSuccessListener to second StorageReference.
+                    storageReference2nd.putFile(FilePathUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            storageReference2nd.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Uri> task) {
+                                    downloadUrl = task.getResult().toString();
+                                }
+                            });
+                        }
+                    });
+                }
+
+                final String userid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(userid);
+                reference.child("profilepic").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Toast.makeText(getActivity(), "Profile Picture uploaded successfully!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                profilepic.setVisibility(View.GONE);
             }
         });
 
@@ -132,6 +171,17 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
+    public String GetFileExtension(Uri uri) {
+
+        ContentResolver contentResolver = getActivity().getContentResolver();
+
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+
+        // Returning the file Extension.
+        return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri)) ;
+
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -148,6 +198,11 @@ public class ProfileFragment extends Fragment {
 
                 // Setting up bitmap selected image into ImageView.
                 ppic.setImageBitmap(bitmap);
+
+
+
+                profilepic.setVisibility(View.VISIBLE);
+//                Toast.makeText(getActivity(),FilePathUri.toString() , Toast.LENGTH_SHORT).show();
 
 
 

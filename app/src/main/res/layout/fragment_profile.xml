@@ -23,6 +23,18 @@
                 android:layout_marginTop="40dp"
                 android:src="@drawable/ic_face_black_24dp" />
 
+
+            <Button
+                android:id="@+id/profilepic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/transparent_bg_button"
+                android:padding="10dp"
+                android:text="upload"
+                android:visibility="gone"/>
+
             <Button
                 android:id="@+id/edtprofile"
                 android:layout_width="wrap_content"

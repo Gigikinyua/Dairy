@@ -2,11 +2,11 @@ package com.kinyua.dairy.Helpers;
 
 public class ImageUploadInfo {
     public String cowName;
-    public String cowiden;
+    public String cowTagId;
     public String cowOwner;
     public String cowDOB;
 
-    public String imageURL;
+    public String CowimageURL;
 
     public ImageUploadInfo() {
 
@@ -15,10 +15,10 @@ public class ImageUploadInfo {
     public ImageUploadInfo(String name, String id, String owner, String dob, String url) {
 
         this.cowName = name;
-        this.cowiden = id;
+        this.cowTagId = id;
         this.cowOwner = owner;
         this.cowDOB = dob;
-        this.imageURL= url;
+        this.CowimageURL= url;
     }
 
 
@@ -26,7 +26,7 @@ public class ImageUploadInfo {
         return cowName;
     }
     public String getCowId() {
-        return cowiden;
+        return cowTagId;
     }
     public String getCowOwner() {
         return cowOwner;
@@ -36,6 +36,6 @@ public class ImageUploadInfo {
     }
 
     public String getImageURL() {
-        return imageURL;
+        return CowimageURL;
     }
 }
